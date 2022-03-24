@@ -4,14 +4,24 @@ jobs:
   scalafix-lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
           distribution: temurin
           java-version: 8
-      - name: Build
+
+      - name: Checkout sbt-scalafix
+        uses: actions/checkout@v3
+        with:
+          repository: ingarabr/sbt-scalafix
+          ref: diagnostics-reporters
+          path: sbt-calafix
+
+      - name: build scalafix
+        run: cd sbt-calafix; sbt 'set version := "SNAPSHOT"' publishLocal
+      - name: Build repository
         run: sbt compile
       - name: Scalafix linting
         run: sbt "scalafix --check"
