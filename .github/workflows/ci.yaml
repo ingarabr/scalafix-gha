@@ -4,14 +4,44 @@ jobs:
   scalafix-lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
       - name: Setup JDK
         uses: actions/setup-java@v2
         with:
           distribution: temurin
           java-version: 8
-      - name: Build
-        run: sbt compile
+
+      - name: Checkout sbt-scalafix
+        uses: actions/checkout@v3
+        with:
+          repository: ingarabr/sbt-scalafix
+          ref: diagnostics-reporters
+          path: sbt-calafix
+
+      - name: Cache sbt
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.sbt
+            ~/.ivy2/cache
+            ~/.ivy2/local
+            ~/.cache/scalablytyped
+          key: ${{ runner.os }}-sbt
+
+      - name: build scalafix
+        run: cd sbt-calafix; sbt 'set version := "SNAPSHOT"' publishLocal
+
+      - name: Build repository
+        run: sbt 'compile; buildGithubAction'
+
       - name: Scalafix linting
         run: sbt "scalafix --check"
+
+      - name: Scalafix Checkrun
+        uses: ./
+        if: always()
+        with:
+          scalafix-annotation-file: ./example/target/annotations.json
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

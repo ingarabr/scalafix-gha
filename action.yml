@@ -1,0 +1,14 @@
+name: scalafix-gha
+description: Check run annotations for scalafix linting
+inputs:
+  scalafix-annotation-file:
+    description: The file
+    required: true
+  repo-token:
+    description: The repo token
+    required: true
+
+runs:
+  using: node16
+  main: action.js
+
